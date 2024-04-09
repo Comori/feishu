@@ -1,18 +1,38 @@
-name: 'The name of your action here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: feishu
+description: 'feishu bot send message'
+author: 'kevin'
 
 # Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
-  icon: 'heart'
-  color: 'red'
+  icon: 'send'
+  color: 'blue'
 
 # Define your inputs here.
 inputs:
-  milliseconds:
-    description: 'Your input description here'
+  webhook-url:
+    description: 'The bot webhook url'
     required: true
-    default: '1000'
+  msg-type:
+    description: 'The Message type. text/card/cardkit'
+    required: true
+    default: text
+  cardkit-id:
+    description: 'If message type is cardkit, the id of cardkit.'
+    required: false
+  ccardkit-version:
+    description: 'If message type is cardkit, the version of cardkit.'
+    required: false
+    default: 1.0.0
+  content:
+    description: 'The Message content or cardkit params.'
+    required: true
+  title:
+    description: 'If message type is card, the title of card.'
+    required: false
+  title-color:
+    description: 'If message type is card, the title color of card.'
+    required: false
+    default: green
 
 # Define your outputs here.
 outputs:
