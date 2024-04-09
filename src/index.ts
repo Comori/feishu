@@ -1,7 +1,4 @@
-/**
- * The entrypoint for the action.
- */
-import { run } from './main'
+import { MainRunner } from './main'
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-run()
+const main = new MainRunner()
+main.run()
