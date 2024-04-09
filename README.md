@@ -30,7 +30,7 @@ See [action.yml](action.yml)
 
 ```yaml
 - name: feishu-bot-yc
-  uses: Comori/feishu@v0.0.1
+  uses: Comori/feishu@v0.0.2
   with:
     webhook-url: ${{ secrets.WEBHOOK_URL }}
     msg-type: text
@@ -44,7 +44,7 @@ See [action.yml](action.yml)
 
 ```yaml
 - name: feishu-bot-yc
-  uses: Comori/feishu@v0.0.1
+  uses: Comori/feishu@v0.0.2
   with:
     webhook-url: ${{ secrets.WEBHOOK_URL }}
     msg-type: card
@@ -58,7 +58,7 @@ See [action.yml](action.yml)
 
 ```yaml
 - name: feishu-bot-yc
-  uses: Comori/feishu@v0.0.1
+  uses: Comori/feishu@v0.0.2
   with:
     webhook-url: ${{ secrets.WEBHOOK_URL }}
     msg-type: cardkit
