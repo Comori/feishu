@@ -1,4 +1,5 @@
-import axios, { AxiosInstance } from 'axios'
+import axios from 'axios'
+import type { AxiosInstance } from 'axios'
 
 export class Request {
   instance: AxiosInstance
@@ -26,7 +27,7 @@ export class Request {
       }
     )
 
-    return response.data.code == 0
+    return response.data.code === 0
   }
 
   async sendCard(
@@ -45,7 +46,7 @@ export class Request {
           elements: [
             {
               tag: 'markdown',
-              content: content
+              content
             }
           ],
           header: {
@@ -64,7 +65,7 @@ export class Request {
       }
     )
 
-    return response.data.code == 0
+    return response.data.code === 0
   }
 
   async sendCardkit(
@@ -92,6 +93,6 @@ export class Request {
       }
     )
 
-    return response.data.code == 0
+    return response.data.code === 0
   }
 }

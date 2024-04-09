@@ -28486,12 +28486,12 @@ class MainRunner {
             core.error(`❌ msgType is null!!!`);
             valid = false;
         }
-        if (this.msgType == TYPE_CARD &&
+        if (this.msgType === TYPE_CARD &&
             (this.title == null || this.title.length <= 0)) {
             core.error(`❌ car title is null!!!`);
             valid = false;
         }
-        if (this.msgType == TYPE_CARDKIT &&
+        if (this.msgType === TYPE_CARDKIT &&
             (this.cardkitId == null || this.cardkitId.length <= 0)) {
             core.error(`❌ cardkit id is null!!!`);
             valid = false;
@@ -28502,20 +28502,20 @@ class MainRunner {
         }
         this.request = new request_1.Request(this.webhookUrl);
         let sendOk = false;
-        if (this.msgType == TYPE_TEXT) {
+        if (this.msgType === TYPE_TEXT) {
             sendOk = await this.request.sendText(this.content.join('\n'));
         }
-        else if (this.msgType == TYPE_CARD) {
+        else if (this.msgType === TYPE_CARD) {
             sendOk = await this.request.sendCard(this.title, this.titleColor, this.content.join('\n'));
         }
-        else if (this.msgType == TYPE_CARDKIT) {
+        else if (this.msgType === TYPE_CARDKIT) {
             const kvMap = new Map();
-            this.content.forEach(element => {
+            for (const element of this.content) {
                 const kvItems = element.split('=');
-                if (kvItems.length == 2) {
+                if (kvItems.length === 2) {
                     kvMap.set(kvItems[0], kvItems[1]);
                 }
-            });
+            }
             sendOk = await this.request.sendCardkit(this.cardkitId, this.cardkitVersion, kvMap);
         }
         if (sendOk) {
@@ -28562,7 +28562,7 @@ class Request {
                 'Content-Type': 'application/json'
             }
         });
-        return response.data.code == 0;
+        return response.data.code === 0;
     }
     async sendCard(title, color, content) {
         const response = await this.instance.post('', {
@@ -28574,7 +28574,7 @@ class Request {
                 elements: [
                     {
                         tag: 'markdown',
-                        content: content
+                        content
                     }
                 ],
                 header: {
@@ -28590,7 +28590,7 @@ class Request {
                 'Content-Type': 'application/json'
             }
         });
-        return response.data.code == 0;
+        return response.data.code === 0;
     }
     async sendCardkit(cardkitId, cardkitVersion, kv) {
         const response = await this.instance.post('', {
@@ -28608,7 +28608,7 @@ class Request {
                 'Content-Type': 'application/json'
             }
         });
-        return response.data.code == 0;
+        return response.data.code === 0;
     }
 }
 exports.Request = Request;
