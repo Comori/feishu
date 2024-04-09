@@ -29,8 +29,8 @@ See [action.yml](action.yml)
 发送文本消息
 
 ```yaml
-- name: send feishu message
-  uses: Comori/feishu-bot-yc@v0.0.1
+- name: feishu-bot-yc
+  uses: Comori/feishu@v0.0.1
   with:
     webhook-url: ${{ secrets.WEBHOOK_URL }}
     msg-type: text
@@ -43,8 +43,8 @@ See [action.yml](action.yml)
 1. 发送卡片消息. 内容支持 `Markdown`
 
 ```yaml
-- name: send feishu message
-  uses: Comori/feishu-bot-yc@v0.0.1
+- name: feishu-bot-yc
+  uses: Comori/feishu@v0.0.1
   with:
     webhook-url: ${{ secrets.WEBHOOK_URL }}
     msg-type: card
@@ -57,8 +57,8 @@ See [action.yml](action.yml)
    > 飞书卡片模版参考： [https://open.larkoffice.com/cardkit]
 
 ```yaml
-- name: send feishu message
-  uses: Comori/feishu-bot-yc@v0.0.1
+- name: feishu-bot-yc
+  uses: Comori/feishu@v0.0.1
   with:
     webhook-url: ${{ secrets.WEBHOOK_URL }}
     msg-type: cardkit
