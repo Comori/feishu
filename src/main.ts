@@ -21,7 +21,9 @@ export class MainRunner {
 
   constructor() {
     this.useSelfBuiltApp = core.getBooleanInput('use-self-built-app')
+    core.debug('useSelfBuiltApp == ' + this.useSelfBuiltApp+"---"+ core.getInput('use-self-built-app'))
     this.updateCard = core.getBooleanInput('update-card')
+    core.debug('updateCard == ' + this.updateCard+"---"+ core.getInput('update-card'))
     if (this.useSelfBuiltApp) {
       this.appId = core.getInput('app-id', { required: true })
       this.appSecret = core.getInput('app-secret', { required: true })
