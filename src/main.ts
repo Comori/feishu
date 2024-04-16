@@ -1,23 +1,39 @@
 import * as core from '@actions/core'
-import { Request } from './request'
-
-const TYPE_CARD = 'card'
-const TYPE_TEXT = 'text'
-const TYPE_CARDKIT = 'cardkit'
+import { TYPE_CARD, TYPE_CARDKIT, TYPE_TEXT } from './constant'
+import { Client } from './client'
 
 export class MainRunner {
-  webhookUrl: string
+  webhookUrl?: string
   msgType: string
   cardkitId?: string
   cardkitVersion: string
   title?: string
   titleColor: string
   content: string[]
+  useSelfBuiltApp: boolean
+  appId?: string
+  appSecret?: string
+  chatId?: string[]
+  messageIds?: string[]
+  updateCard: boolean
 
-  request?: Request
+  client?: Client
 
   constructor() {
-    this.webhookUrl = core.getInput('webhook-url', { required: true })
+    this.useSelfBuiltApp = core.getBooleanInput('use-self-built-app')
+    this.updateCard = core.getBooleanInput('update-card')
+    if (this.useSelfBuiltApp) {
+      this.appId = core.getInput('app-id', { required: true })
+      this.appSecret = core.getInput('app-secret', { required: true })
+      if(this.updateCard){
+        this.messageIds = core.getMultilineInput('message-id',{ required: true })
+      }else{
+        this.chatId = core.getMultilineInput('chat-id', { required: true })
+      }
+      
+    } else {
+      this.webhookUrl = core.getInput('webhook-url', { required: true })
+    }
     this.msgType = core.getInput('msg-type')
     this.content = core.getMultilineInput('content', { required: true })
     this.cardkitId = core.getInput('cardkit-id')
@@ -28,16 +44,32 @@ export class MainRunner {
 
   async run(): Promise<boolean> {
     let valid = true
-    if (this.webhookUrl == null || this.webhookUrl.length <= 0) {
-      core.error(`❌ webhookUrl is null!!!`)
-      valid = false
+    if (this.useSelfBuiltApp) {
+      if (this.appId == null || this.appId.length <= 0) {
+        core.error(`❌ appId is null!!!`)
+        valid = false
+      }
+      if (this.appSecret == null || this.appSecret.length <= 0) {
+        core.error(`❌ appSecret is null!!!`)
+        valid = false
+      }
+      if (this.chatId == null || this.chatId.length <= 0) {
+        core.error(`❌ chatId is null!!!`)
+        valid = false
+      }
+    } else {
+      if (this.webhookUrl == null || this.webhookUrl.length <= 0) {
+        core.error(`❌ webhookUrl is null!!!`)
+        valid = false
+      }
     }
+
     if (this.msgType == null || this.msgType.length <= 0) {
       core.error(`❌ msgType is null!!!`)
       valid = false
     }
-    if (this.content == null || this.content.length <= 0) {
-      core.error(`❌ msgType is null!!!`)
+    if (this.msgType != TYPE_CARDKIT && (this.content == null || this.content.length <= 0)) {
+      core.error(`❌ content is null!!!`)
       valid = false
     }
     if (
@@ -59,12 +91,18 @@ export class MainRunner {
       return false
     }
 
-    this.request = new Request(this.webhookUrl)
-    let sendOk = false
+    this.client = new Client(this.useSelfBuiltApp,{
+      webhookUrl: this.webhookUrl,
+      appId: this.appId,
+      appSecret: this.appSecret,
+      chatId: this.chatId,
+      messageIds: this.messageIds
+    })
+    var sendResult
     if (this.msgType === TYPE_TEXT) {
-      sendOk = await this.request.sendText(this.content.join('\n'))
+      sendResult = await this.client.sendText(this.content.join('\n'))
     } else if (this.msgType === TYPE_CARD) {
-      sendOk = await this.request.sendCard(
+      sendResult = await this.client.sendCard(
         this.title!,
         this.titleColor,
         this.content.join('\n')
@@ -77,19 +115,23 @@ export class MainRunner {
           kvMap.set(kvItems[0], kvItems[1])
         }
       }
-      sendOk = await this.request.sendCardkit(
+      sendResult = await this.client.sendCardKit(
         this.cardkitId!,
         this.cardkitVersion,
         kvMap
       )
     }
 
-    if (sendOk) {
+    if (sendResult) {
       core.info('✅ send message successfully!!')
+      if(Array.isArray(sendResult)){
+        core.info('👝 The messageId list: ' + sendResult)
+        core.setOutput('message-ids',sendResult)
+      }
     } else {
       core.error('❌ send message fail!!')
     }
 
-    return sendOk
+    return true
   }
 }

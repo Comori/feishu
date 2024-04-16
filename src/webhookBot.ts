@@ -1,7 +1,7 @@
 import axios from 'axios'
 import type { AxiosInstance } from 'axios'
 
-export class Request {
+export class WebhookBot {
   instance: AxiosInstance
 
   constructor(url: string) {

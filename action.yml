@@ -11,7 +11,7 @@ branding:
 inputs:
   webhook-url:
     description: 'The bot webhook url'
-    required: true
+    required: false
   msg-type:
     description: 'The Message type. text/card/cardkit'
     required: true
@@ -34,10 +34,32 @@ inputs:
     required: false
     default: green
 
+  # Advance
+  use-self-built-app:
+    description: 'Use Self-built Application.'
+    required: false
+    default: false
+  app-id:
+    description: 'If you want use Self-built Application. Provide App Id.'
+    required: false
+  app-secret:
+    description: 'If you want use Self-built Application. Provide App Secret.'
+    required: false
+  chat-id:
+    description: 'If you want use Self-built Application. Provide Group Chat Id.'
+    required: false
+  update-card:
+    description: 'If you want update Sent Card. Set True.'
+    required: false
+    default: false
+  message-id:
+    description: 'If you want update Sent Card. Provide Message Ids.'
+    required: false
+
 # Define your outputs here.
 outputs:
-  time:
-    description: 'Your output description here'
+  message-ids:
+    description: 'Self-built Application message id.'
 
 runs:
   using: node20
