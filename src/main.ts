@@ -21,9 +21,9 @@ export class MainRunner {
 
   constructor() {
     this.useSelfBuiltApp = core.getBooleanInput('use-self-built-app')
-    core.debug('useSelfBuiltApp == ' + this.useSelfBuiltApp+"---"+ core.getInput('use-self-built-app'))
+    core.info('useSelfBuiltApp == ' + this.useSelfBuiltApp+"---"+ core.getInput('use-self-built-app'))
     this.updateCard = core.getBooleanInput('update-card')
-    core.debug('updateCard == ' + this.updateCard+"---"+ core.getInput('update-card'))
+    core.info('updateCard == ' + this.updateCard+"---"+ core.getInput('update-card'))
     if (this.useSelfBuiltApp) {
       this.appId = core.getInput('app-id', { required: true })
       this.appSecret = core.getInput('app-secret', { required: true })
@@ -45,6 +45,8 @@ export class MainRunner {
   }
 
   async run(): Promise<boolean> {
+    core.info('useSelfBuiltApp 1== ' + this.useSelfBuiltApp+"---"+ core.getInput('use-self-built-app'))
+    core.info('updateCard 1== ' + this.updateCard+"---"+ core.getInput('update-card'))
     let valid = true
     if (this.useSelfBuiltApp) {
       if (this.appId == null || this.appId.length <= 0) {
