@@ -10,6 +10,9 @@
 
 > This action support: `linux`, `windows`, `macos`
 
+
+>>> `>=0.0.3` 版本开始，支持自有应用发送消息以及更新消息卡片
+
 ## 配置说明
 
 See [action.yml](action.yml)
@@ -30,7 +33,7 @@ See [action.yml](action.yml)
 
 ```yaml
 - name: feishu-bot-yc
-  uses: Comori/feishu@v0.0.2
+  uses: Comori/feishu@v0.0.3
   with:
     webhook-url: ${{ secrets.WEBHOOK_URL }}
     msg-type: text
@@ -44,7 +47,7 @@ See [action.yml](action.yml)
 
 ```yaml
 - name: feishu-bot-yc
-  uses: Comori/feishu@v0.0.2
+  uses: Comori/feishu@v0.0.3
   with:
     webhook-url: ${{ secrets.WEBHOOK_URL }}
     msg-type: card
@@ -58,14 +61,106 @@ See [action.yml](action.yml)
 
 ```yaml
 - name: feishu-bot-yc
-  uses: Comori/feishu@v0.0.2
+  uses: Comori/feishu@v0.0.3
   with:
     webhook-url: ${{ secrets.WEBHOOK_URL }}
     msg-type: cardkit
-    cardkit-id: AAqUaosT4u32w3
+    cardkit-id: AAqUxxxxxx
     cardkit-version: 1.0.1
     content: |
       title=This is a Title!
       name=xiaoming
       age=18
+```
+
+**高阶用法**
+
+自 `0.0.3` 版本开始，支持`自有应用`批量给指定群组发送消息。`chat-id` 可通过飞书后台查看。
+
+1. 发送文本消息
+
+```yaml
+- name: feishu-bot-yc
+  uses: Comori/feishu@v0.0.3
+  with:
+    use-self-built-app: true
+    app-id: ${{ secrets.APP_ID }}
+    app-secret: ${{ secrets.APP_SECRET }}
+    chat-id: oc_9999xxxxxxxxxxxxx
+    content: |
+      This is a test message from github action.
+```
+
+2. 发送卡片消息. 内容支持 `Markdown`
+
+```yaml
+- name: feishu-bot-yc
+  uses: Comori/feishu@v0.0.3
+  with:
+    use-self-built-app: true
+    app-id: ${{ secrets.APP_ID }}
+    app-secret: ${{ secrets.APP_SECRET }}
+    chat-id: oc_9999xxxxxxxxxxxxx
+    msg-type: card
+    title: Card Title
+    content: |
+      普通文本\n标准emoji😁😢🌞💼🏆❌✅\n*斜体*\n**粗体**\n~~删除线~~\n文字链接\n差异化跳转\n<at id=all></at>
+```
+
+3. 发送模版卡片消息.
+   > 飞书卡片模版参考： [https://open.larkoffice.com/cardkit]
+
+```yaml
+- name: feishu-bot-yc
+  uses: Comori/feishu@v0.0.3
+  with:
+    use-self-built-app: true
+    app-id: ${{ secrets.APP_ID }}
+    app-secret: ${{ secrets.APP_SECRET }}
+    chat-id: oc_9999xxxxxxxxxxxxx
+    msg-type: cardkit
+    cardkit-id: AAqUaoxxxxxxxx
+    cardkit-version: 1.0.1
+    content: |
+      title=This is a Title!
+      name=xiaoming
+      age=18
+```
+
+**如果需要更新卡片，可以在发送卡片消息之后，通过消息id更新**
+
+示例：
+```yaml
+- id: create-msg
+  name: feishu-bot-yc
+  uses: Comori/feishu@v0.0.3
+  with:
+    use-self-built-app: true
+    app-id: ${{ secrets.APP_ID }}
+    app-secret: ${{ secrets.APP_SECRET }}
+    chat-id: oc_9999xxxxxxxxxxxxx
+    msg-type: cardkit
+    cardkit-id: AAqUaoxxxxxxxx
+    cardkit-version: 1.0.1
+    content: |
+      title=This is a Title!
+      name=xiaoming
+      age=18
+
+- id: update-msg
+  name: feishu-bot-yc
+  uses: Comori/feishu@v0.0.3
+  with:
+    use-self-built-app: true
+    update-card: true
+    app-id: ${{ secrets.APP_ID }}
+    app-secret: ${{ secrets.APP_SECRET }}
+    message-id: ${{ steps.create-msg.outputs.message-ids }}
+    msg-type: cardkit
+    cardkit-id: AAqUaoxxxxxxxx
+    cardkit-version: 1.0.1
+    content: |
+      title=This is a Update Title!
+      name=xiaoming-update
+      age=19
 ```
