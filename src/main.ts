@@ -62,9 +62,16 @@ export class MainRunner {
         core.error(`❌ appSecret is null!!!`)
         valid = false
       }
-      if (this.chatId == null || this.chatId.length <= 0) {
-        core.error(`❌ chatId is null!!!`)
-        valid = false
+      if (this.updateCard) {
+        if (this.messageIds == null || this.messageIds.length <= 0) {
+          core.error(`❌ messageIds is null!!!`)
+          valid = false
+        }
+      } else {
+        if (this.chatId == null || this.chatId.length <= 0) {
+          core.error(`❌ chatId is null!!!`)
+          valid = false
+        }
       }
     } else {
       if (this.webhookUrl == null || this.webhookUrl.length <= 0) {
