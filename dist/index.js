@@ -28641,7 +28641,7 @@ class MainRunner {
             core.info('✅ send message successfully!!');
             if (Array.isArray(sendResult)) {
                 core.info(`👝 The messageId list: ${sendResult}`);
-                core.setOutput('message-ids', sendResult);
+                core.setOutput('message-ids', sendResult.join('\n'));
             }
         }
         else {
