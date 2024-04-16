@@ -1,4 +1,5 @@
 import axios from 'axios'
+import * as core from '@actions/core'
 
 export class SelfBuiltApp {
   appId: string
@@ -51,6 +52,7 @@ export class SelfBuiltApp {
             content
           })
         }
+        core.debug(`[SelfBuiltApp] send config = ${config}`)
         const resp = await axios(config)
         if (resp.data.code === 0) {
           msgIds.push(resp.data.data.message_id)

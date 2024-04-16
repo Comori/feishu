@@ -111,28 +111,32 @@ export class MainRunner {
       messageIds: this.messageIds
     })
     let sendResult
-    if (this.msgType === TYPE_TEXT) {
-      sendResult = await this.client.sendText(this.content.join('\n'))
-    } else if (this.msgType === TYPE_CARD) {
-      core.debug(`useSelfBuiltApp == ${this.useSelfBuiltApp}`)
-      sendResult = await this.client.sendCard(
-        this.title!,
-        this.titleColor,
-        this.content.join('\n')
-      )
-    } else if (this.msgType === TYPE_CARDKIT) {
-      const kvMap = new Map<string, string>()
-      for (const element of this.content) {
-        const kvItems = element.split('=')
-        if (kvItems.length === 2) {
-          kvMap.set(kvItems[0], kvItems[1])
+    try {
+      if (this.msgType === TYPE_TEXT) {
+        sendResult = await this.client.sendText(this.content.join('\n'))
+      } else if (this.msgType === TYPE_CARD) {
+        core.debug(`useSelfBuiltApp == ${this.useSelfBuiltApp}`)
+        sendResult = await this.client.sendCard(
+          this.title!,
+          this.titleColor,
+          this.content.join('\n')
+        )
+      } else if (this.msgType === TYPE_CARDKIT) {
+        const kvMap = new Map<string, string>()
+        for (const element of this.content) {
+          const kvItems = element.split('=')
+          if (kvItems.length === 2) {
+            kvMap.set(kvItems[0], kvItems[1])
+          }
         }
+        sendResult = await this.client.sendCardKit(
+          this.cardkitId!,
+          this.cardkitVersion,
+          kvMap
+        )
       }
-      sendResult = await this.client.sendCardKit(
-        this.cardkitId!,
-        this.cardkitVersion,
-        kvMap
-      )
+    } catch (error: unknown) {
+      core.debug(`error = ${error}`)
     }
 
     if (sendResult) {
