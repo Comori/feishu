@@ -41,7 +41,7 @@ export class SelfBuiltApp {
       if (token != null) {
         const config = {
           method: 'POST',
-          url: 'https://open.feishu.cn/open-apis/im/v1/messages?receive_id_type=open_id',
+          url: 'https://open.feishu.cn/open-apis/im/v1/messages?receive_id_type=chat_id',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`
