@@ -37,6 +37,7 @@ inputs:
   # Advance
   use-self-built-app:
     description: 'Use Self-built Application.'
+    type: boolean
     required: false
     default: false
   app-id:
@@ -50,6 +51,7 @@ inputs:
     required: false
   update-card:
     description: 'If you want update Sent Card. Set True.'
+    type: boolean
     required: false
     default: false
   message-id:
