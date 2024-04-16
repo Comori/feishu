@@ -28436,7 +28436,7 @@ class Client {
         this.options = options;
     }
     async sendText(content) {
-        if (this.useSelfBuiltApp) {
+        if (!this.useSelfBuiltApp) {
             return new webhookBot_1.WebhookBot(this.options.webhookUrl).sendText(content);
         }
         else {
@@ -28444,7 +28444,7 @@ class Client {
         }
     }
     async sendCard(title, color, content) {
-        if (this.useSelfBuiltApp) {
+        if (!this.useSelfBuiltApp) {
             return new webhookBot_1.WebhookBot(this.options.webhookUrl).sendCard(title, color, content);
         }
         else {
@@ -28452,7 +28452,7 @@ class Client {
         }
     }
     async sendCardKit(cardkitId, cardkitVersion, kv) {
-        if (this.useSelfBuiltApp) {
+        if (!this.useSelfBuiltApp) {
             return new webhookBot_1.WebhookBot(this.options.webhookUrl).sendCardkit(cardkitId, cardkitVersion, kv);
         }
         else {

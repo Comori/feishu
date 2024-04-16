@@ -20,7 +20,7 @@ export class Client {
   }
 
   async sendText(content: string): Promise<boolean | string[]> {
-    if (this.useSelfBuiltApp) {
+    if (!this.useSelfBuiltApp) {
       return new WebhookBot(this.options.webhookUrl!).sendText(content)
     } else {
       return new SelfBuiltApp(
@@ -35,7 +35,7 @@ export class Client {
     color: string,
     content: string
   ): Promise<boolean | string[]> {
-    if (this.useSelfBuiltApp) {
+    if (!this.useSelfBuiltApp) {
       return new WebhookBot(this.options.webhookUrl!).sendCard(
         title,
         color,
@@ -54,7 +54,7 @@ export class Client {
     cardkitVersion: string,
     kv: Map<string, string>
   ): Promise<boolean | string[]> {
-    if (this.useSelfBuiltApp) {
+    if (!this.useSelfBuiltApp) {
       return new WebhookBot(this.options.webhookUrl!).sendCardkit(
         cardkitId,
         cardkitVersion,
