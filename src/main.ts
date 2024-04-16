@@ -122,12 +122,19 @@ export class MainRunner {
       if (this.msgType === TYPE_TEXT) {
         sendResult = await this.client.sendText(this.content.join('\n'))
       } else if (this.msgType === TYPE_CARD) {
-        core.debug(`useSelfBuiltApp == ${this.useSelfBuiltApp}`)
-        sendResult = await this.client.sendCard(
-          this.title!,
-          this.titleColor,
-          this.content.join('\n')
-        )
+        if (this.useSelfBuiltApp && this.updateCard) {
+          sendResult = await this.client.updateCard(
+            this.title!,
+            this.titleColor,
+            this.content.join('\n')
+          )
+        } else {
+          sendResult = await this.client.sendCard(
+            this.title!,
+            this.titleColor,
+            this.content.join('\n')
+          )
+        }
       } else if (this.msgType === TYPE_CARDKIT) {
         const kvMap = new Map<string, string>()
         for (const element of this.content) {
@@ -136,11 +143,19 @@ export class MainRunner {
             kvMap.set(kvItems[0], kvItems[1])
           }
         }
-        sendResult = await this.client.sendCardKit(
-          this.cardkitId!,
-          this.cardkitVersion,
-          kvMap
-        )
+        if (this.useSelfBuiltApp && this.updateCard) {
+          sendResult = await this.client.updateCardKit(
+            this.cardkitId!,
+            this.cardkitVersion,
+            kvMap
+          )
+        } else {
+          sendResult = await this.client.sendCardKit(
+            this.cardkitId!,
+            this.cardkitVersion,
+            kvMap
+          )
+        }
       }
     } catch (error: unknown) {
       core.debug(`error = ${error}`)
