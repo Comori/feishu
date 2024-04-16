@@ -28535,12 +28535,13 @@ class MainRunner {
     client;
     constructor() {
         this.useSelfBuiltApp = core.getBooleanInput('use-self-built-app');
-        core.info(`useSelfBuiltApp == ${this.useSelfBuiltApp}---${core.getInput('use-self-built-app')}`);
+        core.debug(`useSelfBuiltApp == ${this.useSelfBuiltApp}---${core.getInput('use-self-built-app')}`);
         this.updateCard = core.getBooleanInput('update-card');
-        core.info(`updateCard == ${this.updateCard}---${core.getInput('update-card')}`);
+        core.debug(`updateCard == ${this.updateCard}---${core.getInput('update-card')}`);
         if (this.useSelfBuiltApp) {
             this.appId = core.getInput('app-id', { required: true });
             this.appSecret = core.getInput('app-secret', { required: true });
+            core.debug(`appId == ${this.appId}--- appSecret == ${this.appSecret}`);
             if (this.updateCard) {
                 this.messageIds = core.getMultilineInput('message-id', {
                     required: true
@@ -28548,6 +28549,7 @@ class MainRunner {
             }
             else {
                 this.chatId = core.getMultilineInput('chat-id', { required: true });
+                core.debug(`chatId == ${this.chatId}`);
             }
         }
         else {
@@ -28561,8 +28563,6 @@ class MainRunner {
         this.titleColor = core.getInput('title-color');
     }
     async run() {
-        core.info(`useSelfBuiltApp 1== ${this.useSelfBuiltApp}---${core.getInput('use-self-built-app')}`);
-        core.info(`updateCard 1== ${this.updateCard}---${core.getInput('update-card')}`);
         let valid = true;
         if (this.useSelfBuiltApp) {
             if (this.appId == null || this.appId.length <= 0) {
@@ -28619,6 +28619,7 @@ class MainRunner {
             sendResult = await this.client.sendText(this.content.join('\n'));
         }
         else if (this.msgType === constant_1.TYPE_CARD) {
+            core.debug(`useSelfBuiltApp == ${this.useSelfBuiltApp}`);
             sendResult = await this.client.sendCard(this.title, this.titleColor, this.content.join('\n'));
         }
         else if (this.msgType === constant_1.TYPE_CARDKIT) {

@@ -21,22 +21,24 @@ export class MainRunner {
 
   constructor() {
     this.useSelfBuiltApp = core.getBooleanInput('use-self-built-app')
-    core.info(
+    core.debug(
       `useSelfBuiltApp == ${this.useSelfBuiltApp}---${core.getInput('use-self-built-app')}`
     )
     this.updateCard = core.getBooleanInput('update-card')
-    core.info(
+    core.debug(
       `updateCard == ${this.updateCard}---${core.getInput('update-card')}`
     )
     if (this.useSelfBuiltApp) {
       this.appId = core.getInput('app-id', { required: true })
       this.appSecret = core.getInput('app-secret', { required: true })
+      core.debug(`appId == ${this.appId}--- appSecret == ${this.appSecret}`)
       if (this.updateCard) {
         this.messageIds = core.getMultilineInput('message-id', {
           required: true
         })
       } else {
         this.chatId = core.getMultilineInput('chat-id', { required: true })
+        core.debug(`chatId == ${this.chatId}`)
       }
     } else {
       this.webhookUrl = core.getInput('webhook-url')
@@ -50,12 +52,6 @@ export class MainRunner {
   }
 
   async run(): Promise<boolean> {
-    core.info(
-      `useSelfBuiltApp 1== ${this.useSelfBuiltApp}---${core.getInput('use-self-built-app')}`
-    )
-    core.info(
-      `updateCard 1== ${this.updateCard}---${core.getInput('update-card')}`
-    )
     let valid = true
     if (this.useSelfBuiltApp) {
       if (this.appId == null || this.appId.length <= 0) {
@@ -118,6 +114,7 @@ export class MainRunner {
     if (this.msgType === TYPE_TEXT) {
       sendResult = await this.client.sendText(this.content.join('\n'))
     } else if (this.msgType === TYPE_CARD) {
+      core.debug(`useSelfBuiltApp == ${this.useSelfBuiltApp}`)
       sendResult = await this.client.sendCard(
         this.title!,
         this.titleColor,
