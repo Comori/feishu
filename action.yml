@@ -47,7 +47,8 @@ inputs:
     description: 'If you want use Self-built Application. Provide App Secret.'
     required: false
   chat-id:
-    description: 'If you want use Self-built Application. Provide Group Chat Id.'
+    description:
+      'If you want use Self-built Application. Provide Group Chat Id.'
     required: false
   update-card:
     description: 'If you want update Sent Card. Set True.'

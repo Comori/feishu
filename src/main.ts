@@ -21,18 +21,23 @@ export class MainRunner {
 
   constructor() {
     this.useSelfBuiltApp = core.getBooleanInput('use-self-built-app')
-    core.info('useSelfBuiltApp == ' + this.useSelfBuiltApp+"---"+ core.getInput('use-self-built-app'))
+    core.info(
+      `useSelfBuiltApp == ${this.useSelfBuiltApp}---${core.getInput('use-self-built-app')}`
+    )
     this.updateCard = core.getBooleanInput('update-card')
-    core.info('updateCard == ' + this.updateCard+"---"+ core.getInput('update-card'))
+    core.info(
+      `updateCard == ${this.updateCard}---${core.getInput('update-card')}`
+    )
     if (this.useSelfBuiltApp) {
       this.appId = core.getInput('app-id', { required: true })
       this.appSecret = core.getInput('app-secret', { required: true })
-      if(this.updateCard){
-        this.messageIds = core.getMultilineInput('message-id',{ required: true })
-      }else{
+      if (this.updateCard) {
+        this.messageIds = core.getMultilineInput('message-id', {
+          required: true
+        })
+      } else {
         this.chatId = core.getMultilineInput('chat-id', { required: true })
       }
-      
     } else {
       this.webhookUrl = core.getInput('webhook-url', { required: true })
     }
@@ -45,8 +50,12 @@ export class MainRunner {
   }
 
   async run(): Promise<boolean> {
-    core.info('useSelfBuiltApp 1== ' + this.useSelfBuiltApp+"---"+ core.getInput('use-self-built-app'))
-    core.info('updateCard 1== ' + this.updateCard+"---"+ core.getInput('update-card'))
+    core.info(
+      `useSelfBuiltApp 1== ${this.useSelfBuiltApp}---${core.getInput('use-self-built-app')}`
+    )
+    core.info(
+      `updateCard 1== ${this.updateCard}---${core.getInput('update-card')}`
+    )
     let valid = true
     if (this.useSelfBuiltApp) {
       if (this.appId == null || this.appId.length <= 0) {
@@ -72,7 +81,10 @@ export class MainRunner {
       core.error(`❌ msgType is null!!!`)
       valid = false
     }
-    if (this.msgType != TYPE_CARDKIT && (this.content == null || this.content.length <= 0)) {
+    if (
+      this.msgType !== TYPE_CARDKIT &&
+      (this.content == null || this.content.length <= 0)
+    ) {
       core.error(`❌ content is null!!!`)
       valid = false
     }
@@ -95,14 +107,14 @@ export class MainRunner {
       return false
     }
 
-    this.client = new Client(this.useSelfBuiltApp,{
+    this.client = new Client(this.useSelfBuiltApp, {
       webhookUrl: this.webhookUrl,
       appId: this.appId,
       appSecret: this.appSecret,
       chatId: this.chatId,
       messageIds: this.messageIds
     })
-    var sendResult
+    let sendResult
     if (this.msgType === TYPE_TEXT) {
       sendResult = await this.client.sendText(this.content.join('\n'))
     } else if (this.msgType === TYPE_CARD) {
@@ -128,9 +140,9 @@ export class MainRunner {
 
     if (sendResult) {
       core.info('✅ send message successfully!!')
-      if(Array.isArray(sendResult)){
-        core.info('👝 The messageId list: ' + sendResult)
-        core.setOutput('message-ids',sendResult)
+      if (Array.isArray(sendResult)) {
+        core.info(`👝 The messageId list: ${sendResult}`)
+        core.setOutput('message-ids', sendResult)
       }
     } else {
       core.error('❌ send message fail!!')
