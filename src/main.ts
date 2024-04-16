@@ -39,7 +39,7 @@ export class MainRunner {
         this.chatId = core.getMultilineInput('chat-id', { required: true })
       }
     } else {
-      this.webhookUrl = core.getInput('webhook-url', { required: true })
+      this.webhookUrl = core.getInput('webhook-url')
     }
     this.msgType = core.getInput('msg-type')
     this.content = core.getMultilineInput('content', { required: true })

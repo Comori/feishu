@@ -19,7 +19,7 @@ inputs:
   cardkit-id:
     description: 'If message type is cardkit, the id of cardkit.'
     required: false
-  ccardkit-version:
+  cardkit-version:
     description: 'If message type is cardkit, the version of cardkit.'
     required: false
     default: 1.0.0

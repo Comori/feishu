@@ -28419,6 +28419,72 @@ exports["default"] = _default;
 
 /***/ }),
 
+/***/ 4970:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.Client = void 0;
+const selfbuiltApp_1 = __nccwpck_require__(7078);
+const webhookBot_1 = __nccwpck_require__(9185);
+class Client {
+    useSelfBuiltApp;
+    options;
+    constructor(useSelfBuiltApp, options) {
+        this.useSelfBuiltApp = useSelfBuiltApp;
+        this.options = options;
+    }
+    async sendText(content) {
+        if (this.useSelfBuiltApp) {
+            return new webhookBot_1.WebhookBot(this.options.webhookUrl).sendText(content);
+        }
+        else {
+            return new selfbuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret).sendText(this.options.chatId, content);
+        }
+    }
+    async sendCard(title, color, content) {
+        if (this.useSelfBuiltApp) {
+            return new webhookBot_1.WebhookBot(this.options.webhookUrl).sendCard(title, color, content);
+        }
+        else {
+            return new selfbuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret).sendCard(this.options.chatId, content, color, title);
+        }
+    }
+    async sendCardKit(cardkitId, cardkitVersion, kv) {
+        if (this.useSelfBuiltApp) {
+            return new webhookBot_1.WebhookBot(this.options.webhookUrl).sendCardkit(cardkitId, cardkitVersion, kv);
+        }
+        else {
+            return new selfbuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret).sendCardKit(this.options.chatId, cardkitId, cardkitVersion, kv);
+        }
+    }
+    async updateCard(title, color, content) {
+        return new selfbuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret).updateCard(this.options.messageIds, content, color, title);
+    }
+    async updateCardKit(cardkitId, cardkitVersion, kv) {
+        return new selfbuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret).updateCardKit(this.options.messageIds, cardkitId, cardkitVersion, kv);
+    }
+}
+exports.Client = Client;
+
+
+/***/ }),
+
+/***/ 7336:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.TYPE_CARDKIT = exports.TYPE_TEXT = exports.TYPE_CARD = void 0;
+exports.TYPE_CARD = 'card';
+exports.TYPE_TEXT = 'text';
+exports.TYPE_CARDKIT = 'cardkit';
+
+
+/***/ }),
+
 /***/ 399:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -28450,10 +28516,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.MainRunner = void 0;
 const core = __importStar(__nccwpck_require__(2186));
-const request_1 = __nccwpck_require__(438);
-const TYPE_CARD = 'card';
-const TYPE_TEXT = 'text';
-const TYPE_CARDKIT = 'cardkit';
+const constant_1 = __nccwpck_require__(7336);
+const client_1 = __nccwpck_require__(4970);
 class MainRunner {
     webhookUrl;
     msgType;
@@ -28462,9 +28526,33 @@ class MainRunner {
     title;
     titleColor;
     content;
-    request;
+    useSelfBuiltApp;
+    appId;
+    appSecret;
+    chatId;
+    messageIds;
+    updateCard;
+    client;
     constructor() {
-        this.webhookUrl = core.getInput('webhook-url', { required: true });
+        this.useSelfBuiltApp = core.getBooleanInput('use-self-built-app');
+        core.info(`useSelfBuiltApp == ${this.useSelfBuiltApp}---${core.getInput('use-self-built-app')}`);
+        this.updateCard = core.getBooleanInput('update-card');
+        core.info(`updateCard == ${this.updateCard}---${core.getInput('update-card')}`);
+        if (this.useSelfBuiltApp) {
+            this.appId = core.getInput('app-id', { required: true });
+            this.appSecret = core.getInput('app-secret', { required: true });
+            if (this.updateCard) {
+                this.messageIds = core.getMultilineInput('message-id', {
+                    required: true
+                });
+            }
+            else {
+                this.chatId = core.getMultilineInput('chat-id', { required: true });
+            }
+        }
+        else {
+            this.webhookUrl = core.getInput('webhook-url');
+        }
         this.msgType = core.getInput('msg-type');
         this.content = core.getMultilineInput('content', { required: true });
         this.cardkitId = core.getInput('cardkit-id');
@@ -28473,25 +28561,44 @@ class MainRunner {
         this.titleColor = core.getInput('title-color');
     }
     async run() {
+        core.info(`useSelfBuiltApp 1== ${this.useSelfBuiltApp}---${core.getInput('use-self-built-app')}`);
+        core.info(`updateCard 1== ${this.updateCard}---${core.getInput('update-card')}`);
         let valid = true;
-        if (this.webhookUrl == null || this.webhookUrl.length <= 0) {
-            core.error(`❌ webhookUrl is null!!!`);
-            valid = false;
+        if (this.useSelfBuiltApp) {
+            if (this.appId == null || this.appId.length <= 0) {
+                core.error(`❌ appId is null!!!`);
+                valid = false;
+            }
+            if (this.appSecret == null || this.appSecret.length <= 0) {
+                core.error(`❌ appSecret is null!!!`);
+                valid = false;
+            }
+            if (this.chatId == null || this.chatId.length <= 0) {
+                core.error(`❌ chatId is null!!!`);
+                valid = false;
+            }
+        }
+        else {
+            if (this.webhookUrl == null || this.webhookUrl.length <= 0) {
+                core.error(`❌ webhookUrl is null!!!`);
+                valid = false;
+            }
         }
         if (this.msgType == null || this.msgType.length <= 0) {
             core.error(`❌ msgType is null!!!`);
             valid = false;
         }
-        if (this.content == null || this.content.length <= 0) {
-            core.error(`❌ msgType is null!!!`);
+        if (this.msgType !== constant_1.TYPE_CARDKIT &&
+            (this.content == null || this.content.length <= 0)) {
+            core.error(`❌ content is null!!!`);
             valid = false;
         }
-        if (this.msgType === TYPE_CARD &&
+        if (this.msgType === constant_1.TYPE_CARD &&
             (this.title == null || this.title.length <= 0)) {
             core.error(`❌ car title is null!!!`);
             valid = false;
         }
-        if (this.msgType === TYPE_CARDKIT &&
+        if (this.msgType === constant_1.TYPE_CARDKIT &&
             (this.cardkitId == null || this.cardkitId.length <= 0)) {
             core.error(`❌ cardkit id is null!!!`);
             valid = false;
@@ -28500,15 +28607,21 @@ class MainRunner {
             core.setFailed('😭 feishu params is invalid!!');
             return false;
         }
-        this.request = new request_1.Request(this.webhookUrl);
-        let sendOk = false;
-        if (this.msgType === TYPE_TEXT) {
-            sendOk = await this.request.sendText(this.content.join('\n'));
+        this.client = new client_1.Client(this.useSelfBuiltApp, {
+            webhookUrl: this.webhookUrl,
+            appId: this.appId,
+            appSecret: this.appSecret,
+            chatId: this.chatId,
+            messageIds: this.messageIds
+        });
+        let sendResult;
+        if (this.msgType === constant_1.TYPE_TEXT) {
+            sendResult = await this.client.sendText(this.content.join('\n'));
         }
-        else if (this.msgType === TYPE_CARD) {
-            sendOk = await this.request.sendCard(this.title, this.titleColor, this.content.join('\n'));
+        else if (this.msgType === constant_1.TYPE_CARD) {
+            sendResult = await this.client.sendCard(this.title, this.titleColor, this.content.join('\n'));
         }
-        else if (this.msgType === TYPE_CARDKIT) {
+        else if (this.msgType === constant_1.TYPE_CARDKIT) {
             const kvMap = new Map();
             for (const element of this.content) {
                 const kvItems = element.split('=');
@@ -28516,15 +28629,19 @@ class MainRunner {
                     kvMap.set(kvItems[0], kvItems[1]);
                 }
             }
-            sendOk = await this.request.sendCardkit(this.cardkitId, this.cardkitVersion, kvMap);
+            sendResult = await this.client.sendCardKit(this.cardkitId, this.cardkitVersion, kvMap);
         }
-        if (sendOk) {
+        if (sendResult) {
             core.info('✅ send message successfully!!');
+            if (Array.isArray(sendResult)) {
+                core.info(`👝 The messageId list: ${sendResult}`);
+                core.setOutput('message-ids', sendResult);
+            }
         }
         else {
             core.error('❌ send message fail!!');
         }
-        return sendOk;
+        return true;
     }
 }
 exports.MainRunner = MainRunner;
@@ -28532,7 +28649,7 @@ exports.MainRunner = MainRunner;
 
 /***/ }),
 
-/***/ 438:
+/***/ 7078:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -28541,9 +28658,163 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.Request = void 0;
+exports.SelfBuiltApp = void 0;
 const axios_1 = __importDefault(__nccwpck_require__(8757));
-class Request {
+class SelfBuiltApp {
+    appId;
+    appSecret;
+    constructor(appId, appSecret) {
+        this.appId = appId;
+        this.appSecret = appSecret;
+    }
+    async auth() {
+        const config = {
+            method: 'POST',
+            url: 'https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify({
+                app_id: this.appId,
+                app_secret: this.appSecret
+            })
+        };
+        const resp = await (0, axios_1.default)(config);
+        if (resp.data.code === 0) {
+            return resp.data.tenant_access_token;
+        }
+        return null;
+    }
+    async send(chatIds, msgType, content) {
+        const token = await this.auth();
+        const msgIds = [];
+        for (const chatId of chatIds) {
+            if (token != null) {
+                const config = {
+                    method: 'POST',
+                    url: 'https://open.feishu.cn/open-apis/im/v1/messages?receive_id_type=open_id',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`
+                    },
+                    data: JSON.stringify({
+                        receive_id: chatId,
+                        msg_type: msgType,
+                        content
+                    })
+                };
+                const resp = await (0, axios_1.default)(config);
+                if (resp.data.code === 0) {
+                    msgIds.push(resp.data.data.message_id);
+                }
+            }
+        }
+        return msgIds;
+    }
+    async sendText(chatId, content) {
+        return this.send(chatId, 'text', JSON.stringify({
+            text: content
+        }));
+    }
+    async sendCard(chatId, content, color, title) {
+        return this.send(chatId, 'interactive', JSON.stringify({
+            config: {
+                wide_screen_mode: true
+            },
+            elements: [
+                {
+                    tag: 'markdown',
+                    content
+                }
+            ],
+            header: {
+                template: color,
+                title: {
+                    content: title,
+                    tag: 'plain_text'
+                }
+            }
+        }));
+    }
+    async sendCardKit(chatId, cardkitId, cardkitVersion, kv) {
+        return this.send(chatId, 'interactive', JSON.stringify({
+            type: 'template',
+            data: {
+                template_id: cardkitId,
+                template_version_name: cardkitVersion,
+                template_variable: kv
+            }
+        }));
+    }
+    async updateCardInner(messageIds, content) {
+        const token = await this.auth();
+        if (token != null) {
+            for (const msgId of messageIds) {
+                const config = {
+                    method: 'PATCH',
+                    url: `https://open.feishu.cn/open-apis/im/v1/messages/${msgId}`,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`
+                    },
+                    data: JSON.stringify({
+                        content
+                    })
+                };
+                const resp = await (0, axios_1.default)(config);
+                console.log(resp.data);
+            }
+        }
+        return true;
+    }
+    async updateCard(messageIds, content, color, title) {
+        return this.updateCardInner(messageIds, JSON.stringify({
+            config: {
+                wide_screen_mode: true
+            },
+            elements: [
+                {
+                    tag: 'markdown',
+                    content
+                }
+            ],
+            header: {
+                template: color,
+                title: {
+                    content: title,
+                    tag: 'plain_text'
+                }
+            }
+        }));
+    }
+    async updateCardKit(messageIds, cardkitId, cardkitVersion, kv) {
+        return this.updateCardInner(messageIds, JSON.stringify({
+            type: 'template',
+            data: {
+                template_id: cardkitId,
+                template_version_name: cardkitVersion,
+                template_variable: kv
+            }
+        }));
+    }
+}
+exports.SelfBuiltApp = SelfBuiltApp;
+
+
+/***/ }),
+
+/***/ 9185:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.WebhookBot = void 0;
+const axios_1 = __importDefault(__nccwpck_require__(8757));
+class WebhookBot {
     instance;
     constructor(url) {
         this.instance = axios_1.default.create({
@@ -28611,7 +28882,7 @@ class Request {
         return response.data.code === 0;
     }
 }
-exports.Request = Request;
+exports.WebhookBot = WebhookBot;
 
 
 /***/ }),
