@@ -28561,6 +28561,7 @@ class MainRunner {
         this.cardkitVersion = core.getInput('cardkit-version');
         this.title = core.getInput('title');
         this.titleColor = core.getInput('title-color');
+        core.debug(`content = ${this.content}`);
     }
     async run() {
         let valid = true;
@@ -28638,11 +28639,13 @@ class MainRunner {
             else if (this.msgType === constant_1.TYPE_CARDKIT) {
                 const kvMap = new Map();
                 for (const element of this.content) {
+                    core.debug(`element = ${element}`);
                     const kvItems = element.split('=');
                     if (kvItems.length === 2) {
                         kvMap.set(kvItems[0], kvItems[1]);
                     }
                 }
+                core.debug(`kvMap = ${JSON.stringify(kvMap)}`);
                 if (this.useSelfBuiltApp && this.updateCard) {
                     sendResult = await this.client.updateCardKit(this.cardkitId, this.cardkitVersion, kvMap);
                 }
