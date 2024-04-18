@@ -1,5 +1,6 @@
 import axios from 'axios'
 import type { AxiosInstance } from 'axios'
+import { Dictionary } from './type'
 
 export class WebhookBot {
   instance: AxiosInstance
@@ -71,7 +72,7 @@ export class WebhookBot {
   async sendCardkit(
     cardkitId: string,
     cardkitVersion: string,
-    kv: Map<string, string>
+    kv: Dictionary<string, string>
   ): Promise<boolean> {
     const response = await this.instance.post(
       '',

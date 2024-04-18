@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import { TYPE_CARD, TYPE_CARDKIT, TYPE_TEXT } from './constant'
 import { Client } from './client'
+import { Dictionary } from './type'
 
 export class MainRunner {
   webhookUrl?: string
@@ -137,12 +138,12 @@ export class MainRunner {
           )
         }
       } else if (this.msgType === TYPE_CARDKIT) {
-        const kvMap = new Map<string, string>()
+        const kvMap: Dictionary<string, string> = {}
         for (const element of this.content) {
           core.debug(`element = ${element}`)
           const kvItems = element.split('=')
           if (kvItems.length === 2) {
-            kvMap.set(kvItems[0], kvItems[1])
+            kvMap[kvItems[0]] = kvItems[1]
           }
         }
         core.debug(`kvMap = ${JSON.stringify(kvMap)}`)

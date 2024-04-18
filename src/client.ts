@@ -1,4 +1,5 @@
 import { SelfBuiltApp } from './selfbuiltApp'
+import { Dictionary } from './type'
 import { WebhookBot } from './webhookBot'
 
 export interface ClientOptions {
@@ -52,7 +53,7 @@ export class Client {
   async sendCardKit(
     cardkitId: string,
     cardkitVersion: string,
-    kv: Map<string, string>
+    kv: Dictionary<string, string>
   ): Promise<boolean | string[]> {
     if (!this.useSelfBuiltApp) {
       return new WebhookBot(this.options.webhookUrl!).sendCardkit(
@@ -82,7 +83,7 @@ export class Client {
   async updateCardKit(
     cardkitId: string,
     cardkitVersion: string,
-    kv: Map<string, string>
+    kv: Dictionary<string, string>
   ): Promise<boolean> {
     return new SelfBuiltApp(
       this.options.appId!,

@@ -1,5 +1,6 @@
 import axios from 'axios'
 import * as core from '@actions/core'
+import { Dictionary } from './type'
 
 export class SelfBuiltApp {
   appId: string
@@ -107,7 +108,7 @@ export class SelfBuiltApp {
     chatId: string[],
     cardkitId: string,
     cardkitVersion: string,
-    kv: Map<string, string>
+    kv: Dictionary<string, string>
   ): Promise<string[]> {
     return this.send(
       chatId,
@@ -181,7 +182,7 @@ export class SelfBuiltApp {
     messageIds: string[],
     cardkitId: string,
     cardkitVersion: string,
-    kv: Map<string, string>
+    kv: Dictionary<string, string>
   ): Promise<boolean> {
     return this.updateCardInner(
       messageIds,

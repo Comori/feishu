@@ -28637,12 +28637,12 @@ class MainRunner {
                 }
             }
             else if (this.msgType === constant_1.TYPE_CARDKIT) {
-                const kvMap = new Map();
+                const kvMap = {};
                 for (const element of this.content) {
                     core.debug(`element = ${element}`);
                     const kvItems = element.split('=');
                     if (kvItems.length === 2) {
-                        kvMap.set(kvItems[0], kvItems[1]);
+                        kvMap[kvItems[0]] = kvItems[1];
                     }
                 }
                 core.debug(`kvMap = ${JSON.stringify(kvMap)}`);
