@@ -28737,6 +28737,11 @@ class SelfBuiltApp {
         const msgIds = [];
         for (const chatId of chatIds) {
             if (token != null) {
+                const data = JSON.stringify({
+                    receive_id: chatId,
+                    msg_type: msgType,
+                    content
+                });
                 const config = {
                     method: 'POST',
                     url: 'https://open.feishu.cn/open-apis/im/v1/messages?receive_id_type=chat_id',
@@ -28744,13 +28749,9 @@ class SelfBuiltApp {
                         'Content-Type': 'application/json',
                         Authorization: `Bearer ${token}`
                     },
-                    data: JSON.stringify({
-                        receive_id: chatId,
-                        msg_type: msgType,
-                        content
-                    })
+                    data
                 };
-                core.debug(`[SelfBuiltApp] send config = ${config}`);
+                core.debug(`[SelfBuiltApp] send config = ${data}`);
                 const resp = await (0, axios_1.default)(config);
                 if (resp.data.code === 0) {
                     msgIds.push(resp.data.data.message_id);
