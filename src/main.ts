@@ -143,7 +143,11 @@ export class MainRunner {
           core.debug(`element = ${element}`)
           const kvItems = element.split('=')
           if (kvItems.length === 2) {
-            kvMap[kvItems[0]] = kvItems[1]
+            try {
+              kvMap[kvItems[0]] = JSON.parse(kvItems[1])
+            } catch (error) {
+              kvMap[kvItems[0]] = kvItems[1]
+            }
           }
         }
         core.debug(`kvMap = ${JSON.stringify(kvMap)}`)
