@@ -5,16 +5,25 @@ import { Dictionary } from './type'
 export class SelfBuiltApp {
   appId: string
   appSecret: string
+  isLark: boolean
 
-  constructor(appId: string, appSecret: string) {
+  host: string
+
+  constructor(appId: string, appSecret: string, isLark: boolean) {
     this.appId = appId
     this.appSecret = appSecret
+    this.isLark = isLark
+    if (isLark) {
+      this.host = 'https://open.larksuite.com/'
+    } else {
+      this.host = 'https://open.feishu.cn/'
+    }
   }
 
   private async auth(): Promise<string | null> {
     const config = {
       method: 'POST',
-      url: 'https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal',
+      url: `${this.host}open-apis/auth/v3/tenant_access_token/internal`,
       headers: {
         'Content-Type': 'application/json'
       },
@@ -47,7 +56,7 @@ export class SelfBuiltApp {
         })
         const config = {
           method: 'POST',
-          url: 'https://open.feishu.cn/open-apis/im/v1/messages?receive_id_type=chat_id',
+          url: `${this.host}open-apis/im/v1/messages?receive_id_type=chat_id`,
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`
@@ -133,7 +142,7 @@ export class SelfBuiltApp {
       for (const msgId of messageIds) {
         const config = {
           method: 'PATCH',
-          url: `https://open.feishu.cn/open-apis/im/v1/messages/${msgId}`,
+          url: `${this.host}open-apis/im/v1/messages/${msgId}`,
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`

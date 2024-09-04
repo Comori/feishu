@@ -28431,16 +28431,18 @@ const webhookBot_1 = __nccwpck_require__(9185);
 class Client {
     useSelfBuiltApp;
     options;
-    constructor(useSelfBuiltApp, options) {
+    isLark;
+    constructor(useSelfBuiltApp, options, isLark) {
         this.useSelfBuiltApp = useSelfBuiltApp;
         this.options = options;
+        this.isLark = isLark;
     }
     async sendText(content) {
         if (!this.useSelfBuiltApp) {
             return new webhookBot_1.WebhookBot(this.options.webhookUrl).sendText(content);
         }
         else {
-            return new selfbuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret).sendText(this.options.chatId, content);
+            return new selfbuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret, this.isLark).sendText(this.options.chatId, content);
         }
     }
     async sendCard(title, color, content) {
@@ -28448,7 +28450,7 @@ class Client {
             return new webhookBot_1.WebhookBot(this.options.webhookUrl).sendCard(title, color, content);
         }
         else {
-            return new selfbuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret).sendCard(this.options.chatId, content, color, title);
+            return new selfbuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret, this.isLark).sendCard(this.options.chatId, content, color, title);
         }
     }
     async sendCardKit(cardkitId, cardkitVersion, kv) {
@@ -28456,14 +28458,14 @@ class Client {
             return new webhookBot_1.WebhookBot(this.options.webhookUrl).sendCardkit(cardkitId, cardkitVersion, kv);
         }
         else {
-            return new selfbuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret).sendCardKit(this.options.chatId, cardkitId, cardkitVersion, kv);
+            return new selfbuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret, this.isLark).sendCardKit(this.options.chatId, cardkitId, cardkitVersion, kv);
         }
     }
     async updateCard(title, color, content) {
-        return new selfbuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret).updateCard(this.options.messageIds, content, color, title);
+        return new selfbuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret, this.isLark).updateCard(this.options.messageIds, content, color, title);
     }
     async updateCardKit(cardkitId, cardkitVersion, kv) {
-        return new selfbuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret).updateCardKit(this.options.messageIds, cardkitId, cardkitVersion, kv);
+        return new selfbuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret, this.isLark).updateCardKit(this.options.messageIds, cardkitId, cardkitVersion, kv);
     }
 }
 exports.Client = Client;
@@ -28532,10 +28534,12 @@ class MainRunner {
     chatId;
     messageIds;
     updateCard;
+    isLark;
     client;
     constructor() {
         this.useSelfBuiltApp = core.getBooleanInput('use-self-built-app');
         core.debug(`useSelfBuiltApp == ${this.useSelfBuiltApp}---${core.getInput('use-self-built-app')}`);
+        this.isLark = core.getBooleanInput('is-lark');
         this.updateCard = core.getBooleanInput('update-card');
         core.debug(`updateCard == ${this.updateCard}---${core.getInput('update-card')}`);
         if (this.useSelfBuiltApp) {
@@ -28622,7 +28626,7 @@ class MainRunner {
             appSecret: this.appSecret,
             chatId: this.chatId,
             messageIds: this.messageIds
-        });
+        }, this.isLark);
         let sendResult;
         try {
             if (this.msgType === constant_1.TYPE_TEXT) {
@@ -28718,14 +28722,23 @@ const core = __importStar(__nccwpck_require__(2186));
 class SelfBuiltApp {
     appId;
     appSecret;
-    constructor(appId, appSecret) {
+    isLark;
+    host;
+    constructor(appId, appSecret, isLark) {
         this.appId = appId;
         this.appSecret = appSecret;
+        this.isLark = isLark;
+        if (isLark) {
+            this.host = 'https://open.larksuite.com/';
+        }
+        else {
+            this.host = 'https://open.feishu.cn/';
+        }
     }
     async auth() {
         const config = {
             method: 'POST',
-            url: 'https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal',
+            url: `${this.host}open-apis/auth/v3/tenant_access_token/internal`,
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -28752,7 +28765,7 @@ class SelfBuiltApp {
                 });
                 const config = {
                     method: 'POST',
-                    url: 'https://open.feishu.cn/open-apis/im/v1/messages?receive_id_type=chat_id',
+                    url: `${this.host}open-apis/im/v1/messages?receive_id_type=chat_id`,
                     headers: {
                         'Content-Type': 'application/json',
                         Authorization: `Bearer ${token}`
@@ -28809,7 +28822,7 @@ class SelfBuiltApp {
             for (const msgId of messageIds) {
                 const config = {
                     method: 'PATCH',
-                    url: `https://open.feishu.cn/open-apis/im/v1/messages/${msgId}`,
+                    url: `${this.host}open-apis/im/v1/messages/${msgId}`,
                     headers: {
                         'Content-Type': 'application/json',
                         Authorization: `Bearer ${token}`

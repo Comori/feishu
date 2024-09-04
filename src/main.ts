@@ -17,6 +17,7 @@ export class MainRunner {
   chatId?: string[]
   messageIds?: string[]
   updateCard: boolean
+  isLark: boolean
 
   client?: Client
 
@@ -25,6 +26,7 @@ export class MainRunner {
     core.debug(
       `useSelfBuiltApp == ${this.useSelfBuiltApp}---${core.getInput('use-self-built-app')}`
     )
+    this.isLark = core.getBooleanInput('is-lark')
     this.updateCard = core.getBooleanInput('update-card')
     core.debug(
       `updateCard == ${this.updateCard}---${core.getInput('update-card')}`
@@ -112,13 +114,17 @@ export class MainRunner {
       return false
     }
 
-    this.client = new Client(this.useSelfBuiltApp, {
-      webhookUrl: this.webhookUrl,
-      appId: this.appId,
-      appSecret: this.appSecret,
-      chatId: this.chatId,
-      messageIds: this.messageIds
-    })
+    this.client = new Client(
+      this.useSelfBuiltApp,
+      {
+        webhookUrl: this.webhookUrl,
+        appId: this.appId,
+        appSecret: this.appSecret,
+        chatId: this.chatId,
+        messageIds: this.messageIds
+      },
+      this.isLark
+    )
     let sendResult
     try {
       if (this.msgType === TYPE_TEXT) {

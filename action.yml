@@ -58,6 +58,10 @@ inputs:
   message-id:
     description: 'If you want update Sent Card. Provide Message Ids.'
     required: false
+  is-lark:
+    description: 'The app is lark'
+    required: false
+    default: false
 
 # Define your outputs here.
 outputs:

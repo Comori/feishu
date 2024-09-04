@@ -15,9 +15,16 @@ export class Client {
 
   options: ClientOptions
 
-  constructor(useSelfBuiltApp: boolean, options: ClientOptions) {
+  isLark: boolean
+
+  constructor(
+    useSelfBuiltApp: boolean,
+    options: ClientOptions,
+    isLark: boolean
+  ) {
     this.useSelfBuiltApp = useSelfBuiltApp
     this.options = options
+    this.isLark = isLark
   }
 
   async sendText(content: string): Promise<boolean | string[]> {
@@ -26,7 +33,8 @@ export class Client {
     } else {
       return new SelfBuiltApp(
         this.options.appId!,
-        this.options.appSecret!
+        this.options.appSecret!,
+        this.isLark
       ).sendText(this.options.chatId!, content)
     }
   }
@@ -45,7 +53,8 @@ export class Client {
     } else {
       return new SelfBuiltApp(
         this.options.appId!,
-        this.options.appSecret!
+        this.options.appSecret!,
+        this.isLark
       ).sendCard(this.options.chatId!, content, color, title)
     }
   }
@@ -64,7 +73,8 @@ export class Client {
     } else {
       return new SelfBuiltApp(
         this.options.appId!,
-        this.options.appSecret!
+        this.options.appSecret!,
+        this.isLark
       ).sendCardKit(this.options.chatId!, cardkitId, cardkitVersion, kv)
     }
   }
@@ -76,7 +86,8 @@ export class Client {
   ): Promise<boolean> {
     return new SelfBuiltApp(
       this.options.appId!,
-      this.options.appSecret!
+      this.options.appSecret!,
+      this.isLark
     ).updateCard(this.options.messageIds!, content, color, title)
   }
 
@@ -87,7 +98,8 @@ export class Client {
   ): Promise<boolean> {
     return new SelfBuiltApp(
       this.options.appId!,
-      this.options.appSecret!
+      this.options.appSecret!,
+      this.isLark
     ).updateCardKit(this.options.messageIds!, cardkitId, cardkitVersion, kv)
   }
 }
