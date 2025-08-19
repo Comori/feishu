@@ -28644,13 +28644,15 @@ class MainRunner {
                 const kvMap = {};
                 for (const element of this.content) {
                     core.debug(`element = ${element}`);
-                    const kvItems = element.split('=');
-                    if (kvItems.length === 2) {
+                    const index = element.indexOf('=');
+                    if (index > 0) {
+                        const key = element.substring(0, index).trim();
+                        const value = element.substring(index + 1).trim();
                         try {
-                            kvMap[kvItems[0]] = JSON.parse(kvItems[1]);
+                            kvMap[key] = JSON.parse(value);
                         }
                         catch (error) {
-                            kvMap[kvItems[0]] = kvItems[1];
+                            kvMap[key] = value;
                         }
                     }
                 }
