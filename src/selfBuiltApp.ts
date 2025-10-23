@@ -40,23 +40,56 @@ export class SelfBuiltApp {
     return null
   }
 
+  async getUserOpenIdByEmail(email: string): Promise<string | null> {
+    const token = await this.auth()
+    if (token != null) {
+      const config = {
+        method: 'POST',
+        url: `${this.host}open-apis/contact/v3/users/batch_get_id?user_id_type=open_id`,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        data: JSON.stringify({
+          emails: [email],
+          include_resigned: true
+        })
+      }
+      core.debug(
+        `[SelfBuiltApp] getUserOpenIdByEmail config = ${JSON.stringify(config.data)}`
+      )
+      const resp = await axios(config)
+      if (
+        resp.data.code === 0 &&
+        resp.data.data.user_list &&
+        resp.data.data.user_list.length > 0
+      ) {
+        return resp.data.data.user_list[0].user_id
+      } else {
+        core.warning(`⚠️ Cannot find user with email: ${email}`)
+      }
+    }
+    return null
+  }
+
   private async send(
-    chatIds: string[],
+    receiveIds: string[],
     msgType: string,
-    content: string
+    content: string,
+    receiveIdType: 'chat_id' | 'open_id' = 'chat_id'
   ): Promise<string[]> {
     const token = await this.auth()
     const msgIds = []
-    for (const chatId of chatIds) {
+    for (const receiveId of receiveIds) {
       if (token != null) {
         const data = JSON.stringify({
-          receive_id: chatId,
+          receive_id: receiveId,
           msg_type: msgType,
           content
         })
         const config = {
           method: 'POST',
-          url: `${this.host}open-apis/im/v1/messages?receive_id_type=chat_id`,
+          url: `${this.host}open-apis/im/v1/messages?receive_id_type=${receiveIdType}`,
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`
@@ -73,13 +106,18 @@ export class SelfBuiltApp {
     return msgIds
   }
 
-  async sendText(chatId: string[], content: string): Promise<string[]> {
+  async sendText(
+    chatId: string[],
+    content: string,
+    receiveIdType: 'chat_id' | 'open_id' = 'chat_id'
+  ): Promise<string[]> {
     return this.send(
       chatId,
       'text',
       JSON.stringify({
         text: content
-      })
+      }),
+      receiveIdType
     )
   }
 
@@ -87,7 +125,8 @@ export class SelfBuiltApp {
     chatId: string[],
     content: string,
     color: string,
-    title: string
+    title: string,
+    receiveIdType: 'chat_id' | 'open_id' = 'chat_id'
   ): Promise<string[]> {
     return this.send(
       chatId,
@@ -109,7 +148,8 @@ export class SelfBuiltApp {
             tag: 'plain_text'
           }
         }
-      })
+      }),
+      receiveIdType
     )
   }
 
@@ -117,7 +157,8 @@ export class SelfBuiltApp {
     chatId: string[],
     cardkitId: string,
     cardkitVersion: string,
-    kv: Dictionary<string, string>
+    kv: Dictionary<string, string>,
+    receiveIdType: 'chat_id' | 'open_id' = 'chat_id'
   ): Promise<string[]> {
     return this.send(
       chatId,
@@ -129,7 +170,8 @@ export class SelfBuiltApp {
           template_version_name: cardkitVersion,
           template_variable: kv
         }
-      })
+      }),
+      receiveIdType
     )
   }
 

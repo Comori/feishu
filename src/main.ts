@@ -15,6 +15,7 @@ export class MainRunner {
   appId?: string
   appSecret?: string
   chatId?: string[]
+  email?: string
   messageIds?: string[]
   updateCard: boolean
   isLark: boolean
@@ -40,8 +41,9 @@ export class MainRunner {
           required: true
         })
       } else {
-        this.chatId = core.getMultilineInput('chat-id', { required: true })
-        core.debug(`chatId == ${this.chatId}`)
+        this.chatId = core.getMultilineInput('chat-id')
+        this.email = core.getInput('email')
+        core.debug(`chatId == ${this.chatId}, email == ${this.email}`)
       }
     } else {
       this.webhookUrl = core.getInput('webhook-url')
@@ -72,8 +74,20 @@ export class MainRunner {
           valid = false
         }
       } else {
-        if (this.chatId == null || this.chatId.length <= 0) {
-          core.error(`❌ chatId is null!!!`)
+        if (
+          (this.chatId == null || this.chatId.length <= 0) &&
+          (this.email == null || this.email.length <= 0)
+        ) {
+          core.error(`❌ chatId or email is required!!!`)
+          valid = false
+        }
+        if (
+          this.chatId != null &&
+          this.chatId.length > 0 &&
+          this.email != null &&
+          this.email.length > 0
+        ) {
+          core.error(`❌ chatId and email are mutually exclusive!!!`)
           valid = false
         }
       }
@@ -114,14 +128,35 @@ export class MainRunner {
       return false
     }
 
+    // Handle email to open_id conversion
+    let targetChatId = this.chatId
+    if (this.useSelfBuiltApp && this.email && this.email.length > 0) {
+      const selfBuiltApp = new (await import('./selfBuiltApp')).SelfBuiltApp(
+        this.appId!,
+        this.appSecret!,
+        this.isLark
+      )
+      const openId = await selfBuiltApp.getUserOpenIdByEmail(this.email)
+      if (openId) {
+        targetChatId = [openId]
+        core.debug(`✅ Got open_id for email ${this.email}: ${openId}`)
+      } else {
+        core.warning(
+          `⚠️ Cannot get open_id for email: ${this.email}, skip sending message`
+        )
+        return true
+      }
+    }
+
     this.client = new Client(
       this.useSelfBuiltApp,
       {
         webhookUrl: this.webhookUrl,
         appId: this.appId,
         appSecret: this.appSecret,
-        chatId: this.chatId,
-        messageIds: this.messageIds
+        chatId: targetChatId,
+        messageIds: this.messageIds,
+        useOpenId: this.email != null && this.email.length > 0
       },
       this.isLark
     )
