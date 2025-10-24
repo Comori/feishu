@@ -128,35 +128,16 @@ export class MainRunner {
       return false
     }
 
-    // Handle email to open_id conversion
-    let targetChatId = this.chatId
-    if (this.useSelfBuiltApp && this.email && this.email.length > 0) {
-      const selfBuiltApp = new (await import('./selfBuiltApp')).SelfBuiltApp(
-        this.appId!,
-        this.appSecret!,
-        this.isLark
-      )
-      const openId = await selfBuiltApp.getUserOpenIdByEmail(this.email)
-      if (openId) {
-        targetChatId = [openId]
-        core.debug(`✅ Got open_id for email ${this.email}: ${openId}`)
-      } else {
-        core.warning(
-          `⚠️ Cannot get open_id for email: ${this.email}, skip sending message`
-        )
-        return true
-      }
-    }
-
     this.client = new Client(
       this.useSelfBuiltApp,
       {
         webhookUrl: this.webhookUrl,
         appId: this.appId,
         appSecret: this.appSecret,
-        chatId: targetChatId,
+        chatId: this.chatId,
         messageIds: this.messageIds,
-        useOpenId: this.email != null && this.email.length > 0
+        useOpenId: this.email != null && this.email.length > 0,
+        email: this.email
       },
       this.isLark
     )

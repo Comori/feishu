@@ -28426,7 +28426,7 @@ exports["default"] = _default;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Client = void 0;
-const selfBuiltApp_1 = __nccwpck_require__(5698);
+const self_built_app_1 = __nccwpck_require__(8164);
 const webhookBot_1 = __nccwpck_require__(9185);
 class Client {
     useSelfBuiltApp;
@@ -28443,7 +28443,9 @@ class Client {
         }
         else {
             const receiveIdType = this.options.useOpenId ? 'open_id' : 'chat_id';
-            return new selfBuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret, this.isLark).sendText(this.options.chatId, content, receiveIdType);
+            const selfBuiltApp = new self_built_app_1.SelfBuiltApp(this.options.appId, this.options.appSecret, this.isLark);
+            await this.handleEmail(selfBuiltApp);
+            return selfBuiltApp.sendText(this.options.chatId, content, receiveIdType);
         }
     }
     async sendCard(title, color, content) {
@@ -28452,7 +28454,9 @@ class Client {
         }
         else {
             const receiveIdType = this.options.useOpenId ? 'open_id' : 'chat_id';
-            return new selfBuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret, this.isLark).sendCard(this.options.chatId, content, color, title, receiveIdType);
+            const selfBuiltApp = new self_built_app_1.SelfBuiltApp(this.options.appId, this.options.appSecret, this.isLark);
+            await this.handleEmail(selfBuiltApp);
+            return selfBuiltApp.sendCard(this.options.chatId, content, color, title, receiveIdType);
         }
     }
     async sendCardKit(cardkitId, cardkitVersion, kv) {
@@ -28461,14 +28465,24 @@ class Client {
         }
         else {
             const receiveIdType = this.options.useOpenId ? 'open_id' : 'chat_id';
-            return new selfBuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret, this.isLark).sendCardKit(this.options.chatId, cardkitId, cardkitVersion, kv, receiveIdType);
+            const selfBuiltApp = new self_built_app_1.SelfBuiltApp(this.options.appId, this.options.appSecret, this.isLark);
+            await this.handleEmail(selfBuiltApp);
+            return selfBuiltApp.sendCardKit(this.options.chatId, cardkitId, cardkitVersion, kv, receiveIdType);
         }
     }
     async updateCard(title, color, content) {
-        return new selfBuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret, this.isLark).updateCard(this.options.messageIds, content, color, title);
+        return new self_built_app_1.SelfBuiltApp(this.options.appId, this.options.appSecret, this.isLark).updateCard(this.options.messageIds, content, color, title);
     }
     async updateCardKit(cardkitId, cardkitVersion, kv) {
-        return new selfBuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret, this.isLark).updateCardKit(this.options.messageIds, cardkitId, cardkitVersion, kv);
+        return new self_built_app_1.SelfBuiltApp(this.options.appId, this.options.appSecret, this.isLark).updateCardKit(this.options.messageIds, cardkitId, cardkitVersion, kv);
+    }
+    async handleEmail(selfBuiltApp) {
+        if (this.options.email && this.options.email.length > 0) {
+            const openId = await selfBuiltApp.getUserOpenIdByEmail(this.options.email);
+            if (openId) {
+                this.options.chatId = [openId];
+            }
+        }
     }
 }
 exports.Client = Client;
@@ -28633,27 +28647,14 @@ class MainRunner {
             core.setFailed('😭 feishu params is invalid!!');
             return false;
         }
-        // Handle email to open_id conversion
-        let targetChatId = this.chatId;
-        if (this.useSelfBuiltApp && this.email && this.email.length > 0) {
-            const selfBuiltApp = new (await Promise.resolve(/* import() */).then(__nccwpck_require__.t.bind(__nccwpck_require__, 5698, 23))).SelfBuiltApp(this.appId, this.appSecret, this.isLark);
-            const openId = await selfBuiltApp.getUserOpenIdByEmail(this.email);
-            if (openId) {
-                targetChatId = [openId];
-                core.debug(`✅ Got open_id for email ${this.email}: ${openId}`);
-            }
-            else {
-                core.warning(`⚠️ Cannot get open_id for email: ${this.email}, skip sending message`);
-                return true;
-            }
-        }
         this.client = new client_1.Client(this.useSelfBuiltApp, {
             webhookUrl: this.webhookUrl,
             appId: this.appId,
             appSecret: this.appSecret,
-            chatId: targetChatId,
+            chatId: this.chatId,
             messageIds: this.messageIds,
-            useOpenId: this.email != null && this.email.length > 0
+            useOpenId: this.email != null && this.email.length > 0,
+            email: this.email
         }, this.isLark);
         let sendResult;
         try {
@@ -28714,7 +28715,7 @@ exports.MainRunner = MainRunner;
 
 /***/ }),
 
-/***/ 5698:
+/***/ 8164:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -35275,64 +35276,6 @@ module.exports = JSON.parse('{"application/1d-interleaved-parityfec":{"source":"
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	/* webpack/runtime/create fake namespace object */
-/******/ 	(() => {
-/******/ 		var getProto = Object.getPrototypeOf ? (obj) => (Object.getPrototypeOf(obj)) : (obj) => (obj.__proto__);
-/******/ 		var leafPrototypes;
-/******/ 		// create a fake namespace object
-/******/ 		// mode & 1: value is a module id, require it
-/******/ 		// mode & 2: merge all properties of value into the ns
-/******/ 		// mode & 4: return value when already ns object
-/******/ 		// mode & 16: return value when it's Promise-like
-/******/ 		// mode & 8|1: behave like require
-/******/ 		__nccwpck_require__.t = function(value, mode) {
-/******/ 			if(mode & 1) value = this(value);
-/******/ 			if(mode & 8) return value;
-/******/ 			if(typeof value === 'object' && value) {
-/******/ 				if((mode & 4) && value.__esModule) return value;
-/******/ 				if((mode & 16) && typeof value.then === 'function') return value;
-/******/ 			}
-/******/ 			var ns = Object.create(null);
-/******/ 			__nccwpck_require__.r(ns);
-/******/ 			var def = {};
-/******/ 			leafPrototypes = leafPrototypes || [null, getProto({}), getProto([]), getProto(getProto)];
-/******/ 			for(var current = mode & 2 && value; typeof current == 'object' && !~leafPrototypes.indexOf(current); current = getProto(current)) {
-/******/ 				Object.getOwnPropertyNames(current).forEach((key) => (def[key] = () => (value[key])));
-/******/ 			}
-/******/ 			def['default'] = () => (value);
-/******/ 			__nccwpck_require__.d(ns, def);
-/******/ 			return ns;
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/define property getters */
-/******/ 	(() => {
-/******/ 		// define getter functions for harmony exports
-/******/ 		__nccwpck_require__.d = (exports, definition) => {
-/******/ 			for(var key in definition) {
-/******/ 				if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
-/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
-/******/ 				}
-/******/ 			}
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
-/******/ 	(() => {
-/******/ 		__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/make namespace object */
-/******/ 	(() => {
-/******/ 		// define __esModule on exports
-/******/ 		__nccwpck_require__.r = (exports) => {
-/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
-/******/ 			}
-/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
-/******/ 		};
-/******/ 	})();
-/******/ 	
 /******/ 	/* webpack/runtime/compat */
 /******/ 	
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";

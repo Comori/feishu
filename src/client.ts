@@ -1,4 +1,4 @@
-import { SelfBuiltApp } from './selfBuiltApp'
+import { SelfBuiltApp } from './self-built-app'
 import { Dictionary } from './type'
 import { WebhookBot } from './webhookBot'
 
@@ -9,6 +9,7 @@ export interface ClientOptions {
   chatId?: string[]
   messageIds?: string[]
   useOpenId?: boolean
+  email?: string
 }
 
 export class Client {
@@ -33,11 +34,13 @@ export class Client {
       return new WebhookBot(this.options.webhookUrl!).sendText(content)
     } else {
       const receiveIdType = this.options.useOpenId ? 'open_id' : 'chat_id'
-      return new SelfBuiltApp(
+      const selfBuiltApp = new SelfBuiltApp(
         this.options.appId!,
         this.options.appSecret!,
         this.isLark
-      ).sendText(this.options.chatId!, content, receiveIdType)
+      )
+      await this.handleEmail(selfBuiltApp)
+      return selfBuiltApp.sendText(this.options.chatId!, content, receiveIdType)
     }
   }
 
@@ -54,11 +57,19 @@ export class Client {
       )
     } else {
       const receiveIdType = this.options.useOpenId ? 'open_id' : 'chat_id'
-      return new SelfBuiltApp(
+      const selfBuiltApp = new SelfBuiltApp(
         this.options.appId!,
         this.options.appSecret!,
         this.isLark
-      ).sendCard(this.options.chatId!, content, color, title, receiveIdType)
+      )
+      await this.handleEmail(selfBuiltApp)
+      return selfBuiltApp.sendCard(
+        this.options.chatId!,
+        content,
+        color,
+        title,
+        receiveIdType
+      )
     }
   }
 
@@ -75,11 +86,13 @@ export class Client {
       )
     } else {
       const receiveIdType = this.options.useOpenId ? 'open_id' : 'chat_id'
-      return new SelfBuiltApp(
+      const selfBuiltApp = new SelfBuiltApp(
         this.options.appId!,
         this.options.appSecret!,
         this.isLark
-      ).sendCardKit(
+      )
+      await this.handleEmail(selfBuiltApp)
+      return selfBuiltApp.sendCardKit(
         this.options.chatId!,
         cardkitId,
         cardkitVersion,
@@ -111,5 +124,14 @@ export class Client {
       this.options.appSecret!,
       this.isLark
     ).updateCardKit(this.options.messageIds!, cardkitId, cardkitVersion, kv)
+  }
+
+  private async handleEmail(selfBuiltApp: SelfBuiltApp): Promise<void> {
+    if (this.options.email && this.options.email.length > 0) {
+      const openId = await selfBuiltApp.getUserOpenIdByEmail(this.options.email)
+      if (openId) {
+        this.options.chatId = [openId]
+      }
+    }
   }
 }
