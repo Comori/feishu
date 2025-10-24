@@ -1,4 +1,4 @@
-import { SelfBuiltApp } from './selfbuiltApp'
+import { SelfBuiltApp } from './selfBuiltApp'
 import { Dictionary } from './type'
 import { WebhookBot } from './webhookBot'
 
@@ -8,6 +8,7 @@ export interface ClientOptions {
   appSecret?: string
   chatId?: string[]
   messageIds?: string[]
+  useOpenId?: boolean
 }
 
 export class Client {
@@ -31,11 +32,12 @@ export class Client {
     if (!this.useSelfBuiltApp) {
       return new WebhookBot(this.options.webhookUrl!).sendText(content)
     } else {
+      const receiveIdType = this.options.useOpenId ? 'open_id' : 'chat_id'
       return new SelfBuiltApp(
         this.options.appId!,
         this.options.appSecret!,
         this.isLark
-      ).sendText(this.options.chatId!, content)
+      ).sendText(this.options.chatId!, content, receiveIdType)
     }
   }
 
@@ -51,11 +53,12 @@ export class Client {
         content
       )
     } else {
+      const receiveIdType = this.options.useOpenId ? 'open_id' : 'chat_id'
       return new SelfBuiltApp(
         this.options.appId!,
         this.options.appSecret!,
         this.isLark
-      ).sendCard(this.options.chatId!, content, color, title)
+      ).sendCard(this.options.chatId!, content, color, title, receiveIdType)
     }
   }
 
@@ -71,11 +74,18 @@ export class Client {
         kv
       )
     } else {
+      const receiveIdType = this.options.useOpenId ? 'open_id' : 'chat_id'
       return new SelfBuiltApp(
         this.options.appId!,
         this.options.appSecret!,
         this.isLark
-      ).sendCardKit(this.options.chatId!, cardkitId, cardkitVersion, kv)
+      ).sendCardKit(
+        this.options.chatId!,
+        cardkitId,
+        cardkitVersion,
+        kv,
+        receiveIdType
+      )
     }
   }
 

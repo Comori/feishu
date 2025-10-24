@@ -28426,7 +28426,7 @@ exports["default"] = _default;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Client = void 0;
-const selfbuiltApp_1 = __nccwpck_require__(7078);
+const selfBuiltApp_1 = __nccwpck_require__(5698);
 const webhookBot_1 = __nccwpck_require__(9185);
 class Client {
     useSelfBuiltApp;
@@ -28442,7 +28442,8 @@ class Client {
             return new webhookBot_1.WebhookBot(this.options.webhookUrl).sendText(content);
         }
         else {
-            return new selfbuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret, this.isLark).sendText(this.options.chatId, content);
+            const receiveIdType = this.options.useOpenId ? 'open_id' : 'chat_id';
+            return new selfBuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret, this.isLark).sendText(this.options.chatId, content, receiveIdType);
         }
     }
     async sendCard(title, color, content) {
@@ -28450,7 +28451,8 @@ class Client {
             return new webhookBot_1.WebhookBot(this.options.webhookUrl).sendCard(title, color, content);
         }
         else {
-            return new selfbuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret, this.isLark).sendCard(this.options.chatId, content, color, title);
+            const receiveIdType = this.options.useOpenId ? 'open_id' : 'chat_id';
+            return new selfBuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret, this.isLark).sendCard(this.options.chatId, content, color, title, receiveIdType);
         }
     }
     async sendCardKit(cardkitId, cardkitVersion, kv) {
@@ -28458,14 +28460,15 @@ class Client {
             return new webhookBot_1.WebhookBot(this.options.webhookUrl).sendCardkit(cardkitId, cardkitVersion, kv);
         }
         else {
-            return new selfbuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret, this.isLark).sendCardKit(this.options.chatId, cardkitId, cardkitVersion, kv);
+            const receiveIdType = this.options.useOpenId ? 'open_id' : 'chat_id';
+            return new selfBuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret, this.isLark).sendCardKit(this.options.chatId, cardkitId, cardkitVersion, kv, receiveIdType);
         }
     }
     async updateCard(title, color, content) {
-        return new selfbuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret, this.isLark).updateCard(this.options.messageIds, content, color, title);
+        return new selfBuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret, this.isLark).updateCard(this.options.messageIds, content, color, title);
     }
     async updateCardKit(cardkitId, cardkitVersion, kv) {
-        return new selfbuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret, this.isLark).updateCardKit(this.options.messageIds, cardkitId, cardkitVersion, kv);
+        return new selfBuiltApp_1.SelfBuiltApp(this.options.appId, this.options.appSecret, this.isLark).updateCardKit(this.options.messageIds, cardkitId, cardkitVersion, kv);
     }
 }
 exports.Client = Client;
@@ -28532,6 +28535,7 @@ class MainRunner {
     appId;
     appSecret;
     chatId;
+    email;
     messageIds;
     updateCard;
     isLark;
@@ -28552,8 +28556,9 @@ class MainRunner {
                 });
             }
             else {
-                this.chatId = core.getMultilineInput('chat-id', { required: true });
-                core.debug(`chatId == ${this.chatId}`);
+                this.chatId = core.getMultilineInput('chat-id');
+                this.email = core.getInput('email');
+                core.debug(`chatId == ${this.chatId}, email == ${this.email}`);
             }
         }
         else {
@@ -28585,8 +28590,16 @@ class MainRunner {
                 }
             }
             else {
-                if (this.chatId == null || this.chatId.length <= 0) {
-                    core.error(`❌ chatId is null!!!`);
+                if ((this.chatId == null || this.chatId.length <= 0) &&
+                    (this.email == null || this.email.length <= 0)) {
+                    core.error(`❌ chatId or email is required!!!`);
+                    valid = false;
+                }
+                if (this.chatId != null &&
+                    this.chatId.length > 0 &&
+                    this.email != null &&
+                    this.email.length > 0) {
+                    core.error(`❌ chatId and email are mutually exclusive!!!`);
                     valid = false;
                 }
             }
@@ -28620,12 +28633,27 @@ class MainRunner {
             core.setFailed('😭 feishu params is invalid!!');
             return false;
         }
+        // Handle email to open_id conversion
+        let targetChatId = this.chatId;
+        if (this.useSelfBuiltApp && this.email && this.email.length > 0) {
+            const selfBuiltApp = new (await Promise.resolve(/* import() */).then(__nccwpck_require__.t.bind(__nccwpck_require__, 5698, 23))).SelfBuiltApp(this.appId, this.appSecret, this.isLark);
+            const openId = await selfBuiltApp.getUserOpenIdByEmail(this.email);
+            if (openId) {
+                targetChatId = [openId];
+                core.debug(`✅ Got open_id for email ${this.email}: ${openId}`);
+            }
+            else {
+                core.warning(`⚠️ Cannot get open_id for email: ${this.email}, skip sending message`);
+                return true;
+            }
+        }
         this.client = new client_1.Client(this.useSelfBuiltApp, {
             webhookUrl: this.webhookUrl,
             appId: this.appId,
             appSecret: this.appSecret,
-            chatId: this.chatId,
-            messageIds: this.messageIds
+            chatId: targetChatId,
+            messageIds: this.messageIds,
+            useOpenId: this.email != null && this.email.length > 0
         }, this.isLark);
         let sendResult;
         try {
@@ -28686,7 +28714,7 @@ exports.MainRunner = MainRunner;
 
 /***/ }),
 
-/***/ 7078:
+/***/ 5698:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -28755,19 +28783,47 @@ class SelfBuiltApp {
         }
         return null;
     }
-    async send(chatIds, msgType, content) {
+    async getUserOpenIdByEmail(email) {
+        const token = await this.auth();
+        if (token != null) {
+            const config = {
+                method: 'POST',
+                url: `${this.host}open-apis/contact/v3/users/batch_get_id?user_id_type=open_id`,
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                data: JSON.stringify({
+                    emails: [email],
+                    include_resigned: true
+                })
+            };
+            core.debug(`[SelfBuiltApp] getUserOpenIdByEmail config = ${JSON.stringify(config.data)}`);
+            const resp = await (0, axios_1.default)(config);
+            if (resp.data.code === 0 &&
+                resp.data.data.user_list &&
+                resp.data.data.user_list.length > 0) {
+                return resp.data.data.user_list[0].user_id;
+            }
+            else {
+                core.warning(`⚠️ Cannot find user with email: ${email}`);
+            }
+        }
+        return null;
+    }
+    async send(receiveIds, msgType, content, receiveIdType = 'chat_id') {
         const token = await this.auth();
         const msgIds = [];
-        for (const chatId of chatIds) {
+        for (const receiveId of receiveIds) {
             if (token != null) {
                 const data = JSON.stringify({
-                    receive_id: chatId,
+                    receive_id: receiveId,
                     msg_type: msgType,
                     content
                 });
                 const config = {
                     method: 'POST',
-                    url: `${this.host}open-apis/im/v1/messages?receive_id_type=chat_id`,
+                    url: `${this.host}open-apis/im/v1/messages?receive_id_type=${receiveIdType}`,
                     headers: {
                         'Content-Type': 'application/json',
                         Authorization: `Bearer ${token}`
@@ -28783,12 +28839,12 @@ class SelfBuiltApp {
         }
         return msgIds;
     }
-    async sendText(chatId, content) {
+    async sendText(chatId, content, receiveIdType = 'chat_id') {
         return this.send(chatId, 'text', JSON.stringify({
             text: content
-        }));
+        }), receiveIdType);
     }
-    async sendCard(chatId, content, color, title) {
+    async sendCard(chatId, content, color, title, receiveIdType = 'chat_id') {
         return this.send(chatId, 'interactive', JSON.stringify({
             config: {
                 wide_screen_mode: true
@@ -28806,9 +28862,9 @@ class SelfBuiltApp {
                     tag: 'plain_text'
                 }
             }
-        }));
+        }), receiveIdType);
     }
-    async sendCardKit(chatId, cardkitId, cardkitVersion, kv) {
+    async sendCardKit(chatId, cardkitId, cardkitVersion, kv, receiveIdType = 'chat_id') {
         return this.send(chatId, 'interactive', JSON.stringify({
             type: 'template',
             data: {
@@ -28816,7 +28872,7 @@ class SelfBuiltApp {
                 template_version_name: cardkitVersion,
                 template_variable: kv
             }
-        }));
+        }), receiveIdType);
     }
     async updateCardInner(messageIds, content) {
         const token = await this.auth();
@@ -35219,6 +35275,64 @@ module.exports = JSON.parse('{"application/1d-interleaved-parityfec":{"source":"
 /******/ 	}
 /******/ 	
 /************************************************************************/
+/******/ 	/* webpack/runtime/create fake namespace object */
+/******/ 	(() => {
+/******/ 		var getProto = Object.getPrototypeOf ? (obj) => (Object.getPrototypeOf(obj)) : (obj) => (obj.__proto__);
+/******/ 		var leafPrototypes;
+/******/ 		// create a fake namespace object
+/******/ 		// mode & 1: value is a module id, require it
+/******/ 		// mode & 2: merge all properties of value into the ns
+/******/ 		// mode & 4: return value when already ns object
+/******/ 		// mode & 16: return value when it's Promise-like
+/******/ 		// mode & 8|1: behave like require
+/******/ 		__nccwpck_require__.t = function(value, mode) {
+/******/ 			if(mode & 1) value = this(value);
+/******/ 			if(mode & 8) return value;
+/******/ 			if(typeof value === 'object' && value) {
+/******/ 				if((mode & 4) && value.__esModule) return value;
+/******/ 				if((mode & 16) && typeof value.then === 'function') return value;
+/******/ 			}
+/******/ 			var ns = Object.create(null);
+/******/ 			__nccwpck_require__.r(ns);
+/******/ 			var def = {};
+/******/ 			leafPrototypes = leafPrototypes || [null, getProto({}), getProto([]), getProto(getProto)];
+/******/ 			for(var current = mode & 2 && value; typeof current == 'object' && !~leafPrototypes.indexOf(current); current = getProto(current)) {
+/******/ 				Object.getOwnPropertyNames(current).forEach((key) => (def[key] = () => (value[key])));
+/******/ 			}
+/******/ 			def['default'] = () => (value);
+/******/ 			__nccwpck_require__.d(ns, def);
+/******/ 			return ns;
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__nccwpck_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__nccwpck_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
 /******/ 	/* webpack/runtime/compat */
 /******/ 	
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
